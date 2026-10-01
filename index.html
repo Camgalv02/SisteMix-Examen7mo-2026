@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SisteMix · Integrador de Modelos y Sistemas</title>
+<link rel="stylesheet" href="estilos.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎡</text></svg>">
+</head>
+<body>
+
+<nav id="mainNav">
+  <button class="nav-tab active" data-view="viewJugar">🎮 JUGAR</button>
+  <button class="nav-tab" data-view="viewRepasar">📚 REPASAR</button>
+  <button class="nav-tab" data-view="viewRanking">🏆 RANKING<span class="nav-badge" id="badgeRanking">0</span></button>
+</nav>
+
+<!-- Candado: fuera del nav y fijo, para que se pueda tocar desde cualquier pantalla -->
+<button class="btn-lock-fijo" id="btnAbrirLock" title="Panel docente">🔒</button>
+
+<!-- ═════════ JUGAR ═════════ -->
+<div id="viewJugar" class="view active">
+  <header>
+    <h1 class="lobby-titulo">SISTE<span>MIX</span></h1>
+    <p class="lobby-sub">Integrador de Modelos y Sistemas · Unidades 0 a 6</p>
+  </header>
+  <div class="jugador-actual oculto" id="jugadorActual">Jugando: <strong id="nombreEnJuego">-</strong></div>
+  <div class="rosco-wrap" id="roscoWrap">
+    <div class="monitor">
+      <div class="tipo-pregunta" id="tipoPregunta">PREPARADOS</div>
+      <div class="timer" id="timer">05:00</div>
+      <div class="pregunta-texto" id="preguntaTexto">Seleccioná tu nombre y comenzá.</div>
+    </div>
+  </div>
+  <div class="consola">
+    <input type="text" id="respuesta" placeholder="Escribí tu respuesta..." autocomplete="off" disabled>
+    <button id="btnComprobar" disabled>Comprobar ✅</button>
+    <button id="btnPasapalabra" disabled>Pasapalabra ⏭️</button>
+  </div>
+  <div class="marcador">
+    <span class="ok">✅ Aciertos: <span id="numOk">0</span></span>
+    <span class="bad">❌ Errores: <span id="numBad">0</span></span>
+    <span class="pend">⏳ Pendientes: <span id="numPend">27</span></span>
+  </div>
+</div>
+
+<!-- ═════════ REPASAR ═════════ -->
+<div id="viewRepasar" class="view">
+  <div class="rep-header">
+    <h2>📖 GLOSARIO INTERACTIVO</h2>
+    <p>Todos los términos del programa, por letra. Usalo para estudiar antes de jugar.</p>
+  </div>
+  <div class="repaso-search">
+    <input id="repasoBuscar" type="text" placeholder="🔍  Buscar término o definición...">
+  </div>
+  <div class="letra-filtros" id="letraFiltros">
+    <button class="btn-todas activa" data-letra="*">TODAS</button>
+  </div>
+  <div class="glosario-grid" id="glosarioGrid"></div>
+  <div class="pdf-section">
+    <h3>📄 PRESENTACIONES DE CLASE</h3>
+    <p>Arrastrá o seleccioná los PDFs de tus apuntes para consultarlos sin salir de la página. Solo se carga en este navegador.</p>
+    <div class="pdf-dropzone" id="pdfDropzone">
+      <input type="file" id="pdfInput" accept=".pdf" multiple>
+      <div class="dz-icon">📂</div>
+      <p><b>Arrastrá tus PDFs acá</b><br>o hacé clic para buscarlos</p>
+    </div>
+    <div class="pdf-lista" id="pdfLista"></div>
+  </div>
+</div>
+
+<!-- ═════════ RANKING ═════════ -->
+<div id="viewRanking" class="view">
+  <div class="rk-header">
+    <h2>🏆 RANKING DE LA CLASE</h2>
+    <p id="rkSubtitulo">Cargando...</p>
+  </div>
+  <div class="rk-tabs" id="rkTabs">
+    <button class="rtab activo" data-modo="global">🏆 Global</button>
+    <button class="rtab" data-modo="aciertos">🎯 Aciertos</button>
+    <button class="rtab" data-modo="velocidad">⚡ Velocidad</button>
+    <button class="rtab" data-modo="precision">📊 Precisión</button>
+  </div>
+  <div class="rk-lista" id="rkLista"></div>
+</div>
+
+<!-- ═════════ VISOR DE PDF ═════════ -->
+<div id="pdfOverlay" class="oculto">
+  <div class="pdf-bar">
+    <span id="pdfNombre">archivo.pdf</span>
+    <button id="pdfCerrar">✕ Cerrar</button>
+  </div>
+  <iframe id="pdfFrame" src=""></iframe>
+</div>
+
+<!-- ═════════ CARTEL DE INICIO ═════════ -->
+<div class="overlay" id="overlayInicio">
+  <div class="lobby-card">
+    <div class="lobby-logo">🎮</div>
+    <h1 class="lobby-titulo">SISTE<span>MIX</span></h1>
+    <p class="lobby-sub">Integrador de Modelos y Sistemas · Unidades 0 a 6</p>
+    <div class="lobby-stats">
+      <div class="lobby-stat"><span class="ls-val">5:00</span>Tiempo</div>
+      <div class="lobby-stat"><span class="ls-val">27</span>Letras</div>
+      <div class="lobby-stat"><span class="ls-val">1</span>Intento</div>
+      <div class="lobby-stat"><span class="ls-val ls-jugados" id="statJugados">0/23</span>Jugaron</div>
+    </div>
+    <div class="lobby-nombre-label">¿Quién sos?</div>
+    <select class="lobby-select" id="selectNombre">
+      <option value="">— Seleccioná tu nombre —</option>
+    </select>
+    <p class="lobby-ya-jugo oculto" id="yaJugoMsg">⚠️ Ya usaste tu intento. ¡Solo hay una oportunidad!</p>
+    <p class="lobby-instruc">
+      Este es el <b>integrador</b> de toda la materia, de la Unidad 0 a la 6. Recorrés el abecedario letra por letra. <b>Escribí tu respuesta</b> y apretá Comprobar.
+      Si no sabés, usá <b>Pasapalabra</b> para seguir adelante y volver después.
+      Tenés <b>5 minutos</b> y <b>una sola oportunidad</b> — ¡aprovechala!
+    </p>
+    <div class="lobby-botones">
+      <button class="btn-repasar" id="btnLobbyRepasar">📚 REPASAR ANTES</button>
+      <button class="btn-comenzar" id="btnComenzar" disabled>🚀 COMENZAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════ RESULTADO FINAL ═════════ -->
+<div class="overlay oculto" id="overlayFinal">
+  <div class="panel">
+    <h2 id="tituloFinal">¡TERMINADO!</h2>
+    <div class="puntaje-final" id="puntajeFinal">0 pts</div>
+    <div class="puntaje-label">PUNTAJE GLOBAL</div>
+    <div class="resultado-resumen">
+      <div style="color:var(--green)" id="finalOk">0<small>ACIERTOS</small></div>
+      <div style="color:var(--red)" id="finalBad">0<small>ERRORES</small></div>
+      <div style="color:var(--text-dim)" id="finalPend">0<small>SIN RESPONDER</small></div>
+    </div>
+    <div class="lista-respuestas" id="listaRespuestas"></div>
+    <button id="btnVerRanking">🏆 VER RANKING</button>
+    <button id="btnReiniciar">🔁 NUEVO JUGADOR</button>
+  </div>
+</div>
+
+<!-- ═════════ PEDIDO DE CLAVE ═════════ -->
+<div class="overlay oculto" id="overlayClave">
+  <div class="panel">
+    <h2>🔒 PANEL DOCENTE</h2>
+    <p>Ingrese la clave</p>
+    <input type="password" id="inputClave" class="clave-input" autocomplete="off" placeholder="••••••">
+    <p class="clave-error" id="claveError"></p>
+    <button id="btnEntrarClave">Entrar</button>
+    <button class="btn-cerrar-admin" id="btnCancelarClave">✕ Cancelar</button>
+  </div>
+</div>
+
+<!-- ═════════ PANEL DOCENTE (solo con clave) ═════════ -->
+<div class="overlay oculto" id="overlayAdmin">
+  <div class="panel">
+    <h2>⚙️ PANEL DOCENTE</h2>
+    <p style="font-size:.82rem">Podés resetear un alumno si tuvo un problema técnico, exportar los resultados o resetear todo para empezar de nuevo.</p>
+    <button class="btn-export" id="btnExportCSV" style="width:100%">📥 Exportar CSV</button>
+    <div class="admin-lista" id="adminLista"></div>
+    <button class="btn-danger" id="btnResetTodo">🗑️ Resetear TODOS los jugadores</button>
+    <button class="btn-cerrar-admin" id="btnCerrarAdmin">✕ Cerrar</button>
+  </div>
+</div>
+
+<!-- El orden importa: primero los datos, después la lógica -->
+<script src="datos.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
